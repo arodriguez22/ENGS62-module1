@@ -6,6 +6,7 @@
 #include <xgpiops.h>		/* processor gpio */
 #include "xparameters.h"  	/* constants used by the hardware */
 #include "xil_types.h"		/* types used by xilinx */
+#include "platform.h"
 
 /* led states */
 #define LED_ON true
@@ -16,13 +17,15 @@
 #define OUTPUT 0x0							/* setting GPIO direction to output */
 #define CHANNEL1 1							/* channel 1 of the GPIO port */
 
-/*
- * Initialize the led module
- */
-void led_init(void){
+XGpio port;									/* GPIO port connected to the leds */
 
-}
-
+///*
+// * Initialize the led module
+// */
+//void led_init(void){
+//
+//}
+//
 /*
  * Set <led> to one of {LED_ON,LED_OFF,...}
  *
@@ -31,38 +34,98 @@ void led_init(void){
  */
 void led_set(u32 led, bool tostate){
 
+	u32 current_reg = XGpio_DiscreteRead(&port, CHANNEL1);
+	u32 new_reg;
+
+	if (led == ALL){
+		if (tostate){
+			current_reg = 0xF;
+		}else{
+			current_reg = 0x0;
+		}
+	}
+
+	if (led == 0){
+		new_reg = 0x1;
+		if (tostate){
+			current_reg = current_reg | new_reg;
+		}else{
+			current_reg = (current_reg ^ new_reg);
+		}
+	}
+
+	if (led == 1){
+		new_reg = 0x2;
+		if (tostate){
+			current_reg = current_reg | new_reg;
+		}else{
+			current_reg = (current_reg ^ new_reg);
+		}
+	}
+
+	if (led == 2){
+		new_reg = 0x4;
+		if (tostate){
+			current_reg = current_reg | new_reg;
+		}else{
+			current_reg = (current_reg ^ new_reg);
+		}
+	}
+
+
+	if (led == 3){
+		new_reg = 0x8;
+		if (tostate){
+			current_reg = current_reg | new_reg;
+		}else{
+			current_reg = (current_reg ^ new_reg);
+		}
+	}
+
+	XGpio_DiscreteWrite(&port, CHANNEL1, current_reg);
 }
 
-/*
- * Get the status of <led>
- *
- * <led> is a number >= 0
- * returns {LED_ON,LED_OFF,...}; LED_OFF if <led> is invalid
- */
-bool led_get(u32 led){
+///*
+// * Get the status of <led>
+// *
+// * <led> is a number >= 0
+// * returns {LED_ON,LED_OFF,...}; LED_OFF if <led> is invalid
+// */
+//bool led_get(u32 led){
+//
+//}
 
-}
-
-/*
- * Toggle <led>
- *
- * <led> is a value >= 0
- * Does nothing if <led> is invalid
- */
-void led_toggle(u32 led){
-
-}
+///*
+// * Toggle <led>
+// *
+// * <led> is a value >= 0
+// * Does nothing if <led> is invalid
+// */
+//void led_toggle(u32 led){
+//
+//}
 
 
-void main(){
-	XGpio port;									/* GPIO port connected to the leds */
+int main(){
+
 	init_platform();							/* initialize the hardware platform */
 
     XGpio_Initialize(&port, XPAR_AXI_GPIO_0_DEVICE_ID);	/* initialize device AXI_GPIO_0 */
     XGpio_SetDataDirection(&port, CHANNEL1, OUTPUT);	    /* set tristate buffer to output */
 
+    led_set(ALL, LED_ON);
+    led_set(ALL, LED_OFF);
 
+    led_set(0, LED_ON);
+    led_set(1, LED_ON);
+    led_set(2, LED_ON);
+    led_set(3, LED_ON);
 
-	cleanup_platform();
+    led_set(0, LED_OFF);
+    led_set(1, LED_OFF);
+    led_set(2, LED_OFF);
+    led_set(3, LED_OFF);
+
+    cleanup_platform();
 	return 0;
 }
