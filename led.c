@@ -7,7 +7,7 @@
 #include "xparameters.h"  	/* constants used by the hardware */
 #include "xil_types.h"		/* types used by xilinx */
 #include "platform.h"
-
+#include "led.h"
 /* led states */
 #define LED_ON true
 #define LED_OFF false
@@ -17,15 +17,18 @@
 #define OUTPUT 0x0							/* setting GPIO direction to output */
 #define CHANNEL1 1							/* channel 1 of the GPIO port */
 
-XGpio port;									/* GPIO port connected to the leds */
+static XGpio port;
 
-///*
-// * Initialize the led module
-// */
-//void led_init(void){
-//
-//}
-//
+/*
+ * Initialize the led module
+ */
+void led_init(void){									/* GPIO port connected to the leds */
+	init_platform();							/* initialize the hardware platform */
+
+    XGpio_Initialize(&port, XPAR_AXI_GPIO_0_DEVICE_ID);	/* initialize device AXI_GPIO_0 */
+    XGpio_SetDataDirection(&port, CHANNEL1, OUTPUT);	    /* set tristate buffer to output */
+}
+
 /*
  * Set <led> to one of {LED_ON,LED_OFF,...}
  *
@@ -47,85 +50,163 @@ void led_set(u32 led, bool tostate){
 
 	if (led == 0){
 		new_reg = 0x1;
-		if (tostate){
-			current_reg = current_reg | new_reg;
-		}else{
-			current_reg = (current_reg ^ new_reg);
-		}
 	}
 
 	if (led == 1){
 		new_reg = 0x2;
-		if (tostate){
-			current_reg = current_reg | new_reg;
-		}else{
-			current_reg = (current_reg ^ new_reg);
-		}
 	}
 
 	if (led == 2){
 		new_reg = 0x4;
-		if (tostate){
-			current_reg = current_reg | new_reg;
-		}else{
-			current_reg = (current_reg ^ new_reg);
-		}
 	}
 
 
 	if (led == 3){
 		new_reg = 0x8;
-		if (tostate){
-			current_reg = current_reg | new_reg;
-		}else{
-			current_reg = (current_reg ^ new_reg);
-		}
+	}
+
+	if (led_get(led) == LED_OFF && tostate == LED_OFF){
+		new_reg = 0x0;
+	}
+
+	if (tostate){
+		current_reg = current_reg | new_reg;
+	}else{
+		current_reg = (current_reg ^ new_reg);
 	}
 
 	XGpio_DiscreteWrite(&port, CHANNEL1, current_reg);
 }
 
-///*
-// * Get the status of <led>
-// *
-// * <led> is a number >= 0
-// * returns {LED_ON,LED_OFF,...}; LED_OFF if <led> is invalid
-// */
-//bool led_get(u32 led){
-//
-//}
+/*
+ * Get the status of <led>
+ *
+ * <led> is a number >= 0
+ * returns {LED_ON,LED_OFF,...}; LED_OFF if <led> is invalid
+ */
+bool led_get(u32 led){
 
-///*
-// * Toggle <led>
-// *
-// * <led> is a value >= 0
-// * Does nothing if <led> is invalid
-// */
-//void led_toggle(u32 led){
-//
-//}
+	u32 current_reg = XGpio_DiscreteRead(&port, CHANNEL1);
+	u32 new_reg;
 
 
-int main(){
+	if (led == 0){
+		new_reg = 0x1;
 
-	init_platform();							/* initialize the hardware platform */
+		current_reg = current_reg & new_reg;
 
-    XGpio_Initialize(&port, XPAR_AXI_GPIO_0_DEVICE_ID);	/* initialize device AXI_GPIO_0 */
-    XGpio_SetDataDirection(&port, CHANNEL1, OUTPUT);	    /* set tristate buffer to output */
+		if (current_reg != 0x0){
+			return LED_ON;
+		}else{
+			return LED_OFF;
+		}
 
-    led_set(ALL, LED_ON);
-    led_set(ALL, LED_OFF);
+	}
+	if (led == 1){
+		new_reg = 0x2;
 
-    led_set(0, LED_ON);
-    led_set(1, LED_ON);
-    led_set(2, LED_ON);
-    led_set(3, LED_ON);
+		current_reg = current_reg & new_reg;
 
-    led_set(0, LED_OFF);
-    led_set(1, LED_OFF);
-    led_set(2, LED_OFF);
-    led_set(3, LED_OFF);
+		if (current_reg != 0x0){
+			return LED_ON;
+		}else{
+			return LED_OFF;
+		}
 
-    cleanup_platform();
-	return 0;
+	}
+
+	if (led == 2){
+		new_reg = 0x4;
+
+		current_reg = current_reg & new_reg;
+
+		if (current_reg != 0x0){
+			return LED_ON;
+		}else{
+			return LED_OFF;
+		}
+
+	}
+
+	if (led == 3){
+		new_reg = 0x8;
+
+		current_reg = current_reg & new_reg;
+
+		if (current_reg != 0x0){
+			return LED_ON;
+		}else{
+			return LED_OFF;
+		}
+
+	}
+
+	return LED_OFF;
+
 }
+
+/*
+ * Toggle <led>
+ *
+ * <led> is a value >= 0
+ * Does nothing if <led> is invalid
+ */
+void led_toggle(u32 led){
+
+	if (led_get(led) == LED_ON){
+		led_set(led, LED_OFF);
+	}else{
+		led_set(led, LED_ON);
+	}
+
+}
+
+
+//int main(){
+//
+//	led_init();
+//
+////    led_set(ALL, LED_ON);
+////    led_set(ALL, LED_OFF);
+////
+////    led_set(0, LED_ON);
+////    led_set(1, LED_ON);
+////    led_set(2, LED_ON);
+////    led_set(3, LED_ON);
+////
+////    led_set(0, LED_OFF);
+////    led_set(1, LED_OFF);
+////    led_set(2, LED_OFF);
+////    led_set(3, LED_OFF);
+//
+//
+////    led_set(ALL, LED_ON);
+////
+////    led_set(2, LED_OFF);
+////    led_set(1, LED_OFF);
+////
+////
+////    printf("%d\n\r", led_get(0));
+////    printf("%d\n\r", led_get(1));
+////    printf("%d\n\r", led_get(2));
+////    printf("%d\n\r", led_get(3));
+//
+//    led_set(ALL, LED_ON);
+////
+////    led_toggle(0);
+////    led_toggle(1);
+////    led_toggle(2);
+////    led_toggle(3);
+////
+////    led_toggle(3);
+////    led_toggle(2);
+////    led_toggle(1);
+////    led_toggle(0);
+//
+//    led_set(2, LED_ON);
+//    led_set(2, LED_OFF);
+//    led_set(2, LED_OFF);
+//
+//    cleanup_platform();
+//	return 0;
+//}
