@@ -24,7 +24,6 @@ int main() {
    init_platform();							/* initialize the hardware platform */
    size_t BUFF = 80;
    char line[BUFF];
-   //u32 led_reg;
 
    led_init();
 
@@ -34,9 +33,6 @@ int main() {
 		*/
 	 setvbuf(stdin,NULL,_IONBF,0);
 	 printf("[Hello]\n");
-//     XGpio_Initialize(&port, XPAR_AXI_GPIO_0_DEVICE_ID);	/* initialize device AXI_GPIO_0 */
-//     XGpio_SetDataDirection(&port, CHANNEL1, OUTPUT);	    /* set tristate buffer to output */
-//	 XGpio_DiscreteWrite(&port, CHANNEL1, 0x1);						/* turn on led0 */
 
 	 void getLine(char *final_string, size_t size){
 		 char curr;
@@ -64,27 +60,31 @@ int main() {
 
 		if (strcmp(line, "0") == 0 || strcmp(line, "1") == 0 || strcmp(line, "2") == 0 || strcmp(line, "3") == 0){
 
-			if (strcmp(line, "0") == 0){
-//				//led_reg = XGpio_DiscreteRead(&port, CHANNEL1);
-//				led_reg = led_get()
-//				if (led_reg == 0x0){
-//					XGpio_DiscreteWrite(&port, CHANNEL1, 0x1);
-//				}else if(led_reg == 0x1){
-//					XGpio_DiscreteWrite(&port, CHANNEL1, 0x0);
-//				}
-				led_toggle(0);
+			printf("[%s]\n\r", line);
 
+			if (strcmp(line, "0") == 0){
+				led_toggle(0);
+				printf("[0 on]\n\r");
 			}
 
-			printf("[%s]\n\r", line);
+			if (strcmp(line, "1") == 0){
+				led_toggle(1);
+				printf("[1 on]\n\r");
+			}
+			if (strcmp(line, "2") == 0){
+				led_toggle(2);
+				printf("[2 on]\n\r");
+			}
+			if (strcmp(line, "3") == 0){
+				led_toggle(3);
+				printf("[3 on]\n\r");
+			}
+
+
 		}
 
 	}while(strcmp(line, "q") != 0);
 
-
-
-
-	//XGpio_DiscreteWrite(&port, CHANNEL1, 0x0);
 	cleanup_platform();					/* cleanup the hardware platform */
 	return 0;
 }
