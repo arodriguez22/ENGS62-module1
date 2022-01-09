@@ -18,6 +18,7 @@
 #define CHANNEL1 1							/* channel 1 of the GPIO port */
 
 static XGpio port;
+static XGpioPs portPs;
 
 /*
  * Initialize the led module
@@ -27,6 +28,13 @@ void led_init(void){									/* GPIO port connected to the leds */
 
     XGpio_Initialize(&port, XPAR_AXI_GPIO_0_DEVICE_ID);	/* initialize device AXI_GPIO_0 */
     XGpio_SetDataDirection(&port, CHANNEL1, OUTPUT);	    /* set tristate buffer to output */
+
+    XGpioPs_Config *ps_config = XGpioPs_LookupConfig(XPAR_AXI_GPIO_0_DEVICE_ID);
+    XGpioPs_CfgInitialize(&portPs, ps_config, ps_config->BaseAddr);
+
+    XGpioPs_SetDirectionPin(&portPs, 7, 1); // 1 is for output, 0 for input
+    XGpioPs_SetOutputEnablePin(&portPs, 7, 1); // enables output
+
 }
 
 /*
@@ -73,6 +81,16 @@ void led_set(u32 led, bool tostate){
 		current_reg = current_reg | new_reg;
 	}else{
 		current_reg = (current_reg ^ new_reg);
+	}
+
+	if (led == 4){
+		if (tostate){
+			XGpioPs_WritePin(&portPs, 7, 0x1);
+			return;
+		}else{
+			XGpioPs_WritePin(&portPs, 7, 0x0);
+			return;
+		}
 	}
 
 	XGpio_DiscreteWrite(&port, CHANNEL1, current_reg);
@@ -206,7 +224,8 @@ void led_toggle(u32 led){
 //    led_set(2, LED_ON);
 //    led_set(2, LED_OFF);
 //    led_set(2, LED_OFF);
-//
+
+//	led_set(4, LED_ON);
 //    cleanup_platform();
 //	return 0;
 //}

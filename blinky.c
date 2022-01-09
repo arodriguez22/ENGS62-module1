@@ -34,6 +34,8 @@ int main() {
 	 setvbuf(stdin,NULL,_IONBF,0);
 	 printf("[Hello]\n");
 
+	 led_set(4, true);
+
 	 void getLine(char *final_string, size_t size){
 		 char curr;
 		 curr=getchar();
@@ -84,6 +86,8 @@ int main() {
 		}
 
 	}while(strcmp(line, "q") != 0);
+
+	led_set(ALL, false);
 
 	cleanup_platform();					/* cleanup the hardware platform */
 	return 0;
